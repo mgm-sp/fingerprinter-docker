@@ -16,7 +16,7 @@ RUN apt-get update && \
     && sed -i -e "s/# $LANG /$LANG /g" /etc/locale.gen\
     && dpkg-reconfigure --frontend=noninteractive locales\
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\
-    && gem install bundler
+    && gem install bundler -v 2.3.26
 
 RUN sed -i 's/CipherString = DEFAULT@SECLEVEL=2//g' /etc/ssl/openssl.cnf\
     && sed -i 's/MinProtocol = TLSv1.2//g' /etc/ssl/openssl.cnf
