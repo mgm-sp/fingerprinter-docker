@@ -18,14 +18,27 @@ RUN apt-get update && \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\
     && gem install bundler
 
-WORKDIR /usr/local/share/
+RUN sed -i 's/CipherString = DEFAULT@SECLEVEL=2//g' /etc/ssl/openssl.cnf\
+    && sed -i 's/MinProtocol = TLSv1.2//g' /etc/ssl/openssl.cnf
+
+
+ARG USER=noroot
+ENV HOME /home/$USER
+
+RUN adduser \
+      --gecos "" \
+      --disabled-password \
+      $USER
+
+USER $USER
+WORKDIR $HOME
+
+RUN bundle config set --local path 'vendor/bundle'
 RUN git clone --depth 1 https://github.com/erwanlr/Fingerprinter.git && \
     cd Fingerprinter && \
     bundle install
 
-RUN /usr/local/share/Fingerprinter/fingerprinter.rb --update-all || true
+WORKDIR $HOME/Fingerprinter
+RUN ./fingerprinter.rb --update-all || true
 
-RUN sed -i 's/CipherString = DEFAULT@SECLEVEL=2//g' /etc/ssl/openssl.cnf\
-    && sed -i 's/MinProtocol = TLSv1.2//g' /etc/ssl/openssl.cnf
-
-ENTRYPOINT [ "/usr/local/share/Fingerprinter/fingerprinter.rb" ]
+ENTRYPOINT [ "./fingerprinter.rb" ]
